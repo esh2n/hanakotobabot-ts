@@ -36,10 +36,9 @@ export const client = new Client();
 client.on('ready', () => {
   console.log('ready...');
   if (client.user !== null) {
-    client.user.setPresence({ activity: { name: 'パチンコ' } });
+    client.user.setPresence({ activity: { name: '花言葉' } });
   }
 });
-// client.on('debug', console.log)
 
 const funcs: { [key: string]: string } = {
   // describe here your functions.
