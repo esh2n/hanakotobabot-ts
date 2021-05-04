@@ -54,7 +54,7 @@ import { scrapingHanakotoba as hanakotoba } from "../util/hanakotoba";
 			}
 		})();
 	});
-	cron.schedule('0 0 10 * * *', () => {
+	cron.schedule('0 0 1 * * *', () => {
 	// cron.schedule('* * * * *', () => {
 		(async(): Promise<void> => {
 			const data = await hanakotoba();
