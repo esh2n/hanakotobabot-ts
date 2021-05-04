@@ -7,7 +7,7 @@ const hanakotoba = {
 
 	initialize: async (): Promise<void> => {
 		hanakotoba.browser = await puppeteer.launch({
-			headless: false,
+			headless: true,
 			slowMo: 50,
 			args: ['--no-sandbox', '--disable-setuid-sandbox']
 		});
@@ -16,88 +16,134 @@ const hanakotoba = {
 		await hanakotoba.page.setDefaultNavigationTimeout(0);
 	},
 
-	getHanakotoba: async (): Promise<any> => {
+	getHanakotoba: async (): Promise<DataPayload | null> => {
 		try {
 			const today = hanakotoba.getToday();
-			console.log(`goto: ${hanakotoba.url + today}`)
-			await hanakotoba.page.goto(hanakotoba.url + today, {waitUntil: 'networkidle2'});
-			await hanakotoba.page.waitFor(2000);
+			const targetURL = `${hanakotoba.url + today.url}`;
+			console.log(`goto: ${targetURL}`)
+			await hanakotoba.page.goto(targetURL, {waitUntil: 'networkidle2'});
+			await hanakotoba.page.waitFor(5000);
 
-			const data = await hanakotoba.page.evaluate(() => {
-				const bioDOM = document.querySelectorAll('div.post-single-content>p');
-				const data: string[] = []
-				bioDOM.forEach(dom => {
-					data.push(dom.innerHTML)
-				});
-				return data;
-			});
-			// console.log(data)
-			return data;
-		} catch (error) {
-			console.log(error);
-			hanakotoba.close();
-		}
-	},
+			const data = await hanakotoba.page.evaluate((targetURL: string, today: DateObject) => {
+				const data = {} as DataPayload
+				data.url = targetURL
+				data.today = today.str
 
-	getNecessaryWords: async (): Promise<string[]> => {
-		try {
-			const data = await hanakotoba.getHanakotoba();			const necessaryWords: string[] = []
-			data.forEach((word: string) => {
-				if (
-					word.startsWith('また') ||
-					word.startsWith('以下') ||
-					word.startsWith('<a') ||
-					word.startsWith('旬の') ||
-					word.startsWith('開花時期') ||
-					word.startsWith('出回り時期') ||
-					word.startsWith('花持ち期間') ||
-					word.startsWith('<strong><a') ||
-					word.startsWith('&nbsp;')) {
-					return;
-				} else {
-					necessaryWords.push(word)
+				const initialDOM = document.querySelector('div.topad+p');
+				if (initialDOM) {
+					data.initial = initialDOM.innerHTML.replace(/<\/?strong>/g, "")
 				}
-			})
-			return necessaryWords;
+				const countOfFlowers: number = data.initial.split("」").length - 1
+				data.flowers = []
+				for (let i = 0; i < countOfFlowers; i++) {
+					const suffix1 = i == 0 ? "" : `-${i + 1}`
+					const suffix2 = i == 0 ? "" : `-${(3 * (i + 1)) - 2}`
+					const flowerDOM = document.getElementById(`${today.dom + suffix1}`)
+					if (flowerDOM) {
+						const flower = {} as FlowerInfo
 
+						flower.name = flowerDOM.innerHTML.replace(/[0-9]+月[0-9]+日の誕生花/g, "").replace(/[「」]/g, "")
+
+						const hanakotoba = document.getElementById(`i${suffix2}`)?.parentNode?.nextSibling?.nextSibling?.textContent
+						flower.hanakotoba = `${hanakotoba}`
+
+						const isExistOrient = document.getElementById(`i${suffix2}`)?.parentNode?.nextSibling?.nextSibling?.nextSibling?.nextSibling?.textContent?.startsWith("西洋の")
+						let origin;
+						if (isExistOrient) {
+							origin = document.getElementById(`i${suffix2}`)?.parentNode?.nextSibling?.nextSibling?.nextSibling?.nextSibling?.nextSibling?.nextSibling?.nextSibling?.nextSibling?.nextSibling?.nextSibling
+						} else {
+							origin = document.getElementById(`i${suffix2}`)?.parentNode?.nextSibling?.nextSibling?.nextSibling?.nextSibling
+						}
+						flower.origin = []
+						flower.origin.push(`${origin?.textContent}`)
+						if (Object.prototype.toString.call(origin?.nextSibling?.nextSibling) == "[object HTMLParagraphElement]") {
+							flower.origin.push(`${origin?.nextSibling?.nextSibling?.textContent}`)
+						}
+
+						const regexp = /src=["']?([a-zA-Z0-9_./\-:%?&#=;]+)["']?/g
+						const img = regexp.exec(flowerDOM.parentNode?.nextSibling?.nextSibling?.textContent ?? '')
+						flower.img = ""
+						if (img != null) {
+							console.log(img[1])
+							flower.img = `${img[1]}`
+						}
+						data.flowers.push(flower)
+					}
+				}
+				console.log(data.flowers)
+				return data;
+			}, targetURL, today);
+			await hanakotoba.page.waitFor(5000);
+			const returnedData = data as DataPayload
+			console.log(returnedData)
+			return returnedData;
 		} catch (error) {
-			console.log(error);
-			hanakotoba.close();
-			return [''];
+			console.log(error)
+			hanakotoba.close()
+			return null
 		}
 	},
-
-	getToday: (): string=> {
+	getToday: (): DateObject => {
 		const today = new Date();
 		const month = today.getMonth() + 1;
-		let targetDate = '';
+		const targetDates = {
+			url: '',
+			dom: '',
+			str: '',
+		};
 		const date = today.getDate();
+
 		if (month < 10) {
-			targetDate = '0' + `${month}`
+			targetDates.url = '0' + `${month}`
 		} else {
-			targetDate = `${month}`
+			targetDates.url = `${month}`
+		}
+		if (date < 10) {
+			targetDates.url = targetDates.url + '0' + `${date}`
+		} else {
+			targetDates.url = targetDates.url + `${date}`
 		}
 
-		if (date < 10) {
-			targetDate = targetDate + '0' + `${date}`
-		} else {
-			targetDate = targetDate + `${date}`
-		}
-		return targetDate
+		targetDates.dom = `${month}`
+		targetDates.dom = targetDates.dom + `${date}`
+
+		targetDates.str = `${month}月${date}日`
+
+		return targetDates
 	},
 
 	close: (): void => {
     hanakotoba.browser.close();
-  }
+	}
 };
 
 
-export const scrapingBio = async(): Promise<any> => {
+export const scrapingHanakotoba = async(): Promise<DataPayload | null> => {
 	await hanakotoba.initialize();
-	const data = await hanakotoba.getNecessaryWords();
+	const data = await hanakotoba.getHanakotoba();
 	hanakotoba.close();
 
 	return data;
 }
 
-scrapingBio();
+// scrapingHanakotoba();
+
+interface DateObject {
+	url: string;
+	dom: string;
+	str: string;
+}
+
+interface FlowerInfo {
+	name: string;
+	hanakotoba: string;
+	origin: string[];
+	img: string;
+}
+
+interface DataPayload {
+	today: string;
+	url: string;
+	initial: string;
+	flowers: FlowerInfo[];
+}

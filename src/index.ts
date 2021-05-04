@@ -42,12 +42,8 @@ client.on('ready', () => {
 
 const funcs: { [key: string]: string } = {
   // describe here your functions.
-  echoCounter: './funcs/echoCounter',
-  echoBio: './funcs/echoBio',
-  callEveryone: './funcs/callEveryone',
-  service: './funcs/services',
-  // playVoice: './funcs/playVoice',
-  help: './funcs/help',
+  echoHanakotoba: './funcs/echoHanakotoba',
+  // help: './funcs/help',
 };
 
 const loadFunctions = (funcsObj: { [key: string]: string }): void => {

@@ -1,33 +1,49 @@
-import { Message } from "discord.js";
+/* eslint-disable @typescript-eslint/camelcase */
+import { TextChannel } from "discord.js";
 import { client } from '../index';
+import  cron  from 'node-cron';
 
-import { scrapingBio } from "../util/hanakotoba";
+import { scrapingHanakotoba as hanakotoba } from "../util/hanakotoba";
 
 ((): void => {
-	client.on('message', (message: Message) => {
+	// cron.schedule('0 0 10 * * *', () => {
+	cron.schedule('* * * * *', () => {
 		(async (): Promise<void> => {
-			const content = message.content;
-			if (message.author.bot) return;
-			switch (true) {
-				case /^\/bio (.+)$/.test(content): {
-					const user = RegExp.$1;
-					message.channel.send(
-						`
-						📈Twitterで${user}の自己紹介を検索中...
-						`
-						);
-					const data = await scrapingBio(user);
-					message.channel.send(
-						`
-						> ${data}
-						`
-					);
-					message.react('🥺');
-					break;
+			const data = await hanakotoba();
+			if (data == null) return;
+			const channel = client.channels.cache.get('832885404944433175') as TextChannel;
+			channel.send({
+				embed: {
+					title: `${data.today}の花言葉`,
+					color: 7506394,
 				}
-				default:
-					break;
+			})
+			for (let i = 0; i < data.flowers.length; i++) {
+				channel.send({
+					embed: {
+						title: data.flowers[i].name,
+						color: 0xffffff,
+						footer: {
+							icon_url: data.flowers[i].img,
+							text: "©️ 2021 | hanakotoba bot"
+						},
+						fields: [
+							{
+								name: "花言葉",
+								value: data.flowers[i].hanakotoba,
+							},
+							{
+								name: "由来",
+								value: data.flowers[i].origin.join('/'),
+							}
+						],
+						image: {
+							url: data.flowers[i].img,
+						},
+					}
+				})
 			}
+
 		})();
-	});
+	})
 })();
