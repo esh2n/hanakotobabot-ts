@@ -14,7 +14,7 @@ import { scrapingHanakotoba as hanakotoba } from "../util/hanakotoba";
 			switch (true) {
 				case /^\/hanakotoba$/.test(content): {
 					if (data == null) return;
-					const channel = client.channels.cache.get('836946582402236426') as TextChannel;
+					const channel = message.channel as TextChannel;
 					channel.send({
 						embed: {
 							title: `${data.today}の花言葉`,
