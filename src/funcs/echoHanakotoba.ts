@@ -9,7 +9,6 @@ import { scrapingHanakotoba as hanakotoba } from "../util/hanakotoba";
 	// cron.schedule('0 0 10 * * *', () => {
 	cron.schedule('* * * * *', () => {
 		(async (): Promise<void> => {
-
 			const data = await hanakotoba();
 			if (data == null) return;
 			const channel = client.channels.cache.get('832885404944433175') as TextChannel;
