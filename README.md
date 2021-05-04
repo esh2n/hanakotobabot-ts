@@ -1,4 +1,4 @@
-# scraperbot-ts
+# hanakotoba-ts
 
 - discord bot
-  > https://discordapp.com/oauth2/authorize?client_id=764730263753195520&scope=bot&permissions=0
+  > https://discord.com/api/oauth2/authorize?client_id=839014927636365332&permissions=0&scope=bot
