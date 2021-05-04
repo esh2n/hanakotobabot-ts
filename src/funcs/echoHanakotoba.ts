@@ -11,7 +11,7 @@ import { scrapingHanakotoba as hanakotoba } from "../util/hanakotoba";
 		(async (): Promise<void> => {
 			const data = await hanakotoba();
 			if (data == null) return;
-			const channel = client.channels.cache.get('832885404944433175') as TextChannel;
+			const channel = client.channels.cache.get('836946582402236426') as TextChannel;
 			channel.send({
 				embed: {
 					title: `${data.today}の花言葉`,
