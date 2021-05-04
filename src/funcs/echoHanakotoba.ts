@@ -6,8 +6,8 @@ import  cron  from 'node-cron';
 import { scrapingHanakotoba as hanakotoba } from "../util/hanakotoba";
 
 ((): void => {
-	// cron.schedule('0 0 10 * * *', () => {
-	cron.schedule('* * * * *', () => {
+	cron.schedule('0 0 10 * * *', () => {
+	// cron.schedule('* * * * *', () => {
 		(async (): Promise<void> => {
 			const data = await hanakotoba();
 			if (data == null) return;
