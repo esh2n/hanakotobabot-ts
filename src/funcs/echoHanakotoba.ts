@@ -60,6 +60,7 @@ import { scrapingHanakotoba as hanakotoba } from "../util/hanakotoba";
       const data = await hanakotoba();
       if (data == null) return;
       const channel = client.channels.cache.get('836946582402236426') as TextChannel;
+      const channel2 = client.channels.cache.get('927919935009738853') as TextChannel;
       channel.send({
         embed: {
           title: `${data.today}の花言葉`,
@@ -68,6 +69,29 @@ import { scrapingHanakotoba as hanakotoba } from "../util/hanakotoba";
       })
       for (let i = 0; i < data.flowers.length; i++) {
         channel.send({
+          embed: {
+            title: data.flowers[i].name,
+            color: 0xffffff,
+            footer: {
+              icon_url: data.flowers[i].img,
+              text: "©️ 2021 | hanakotoba bot"
+            },
+            fields: [
+              {
+                name: "花言葉",
+                value: data.flowers[i].hanakotoba,
+              },
+              {
+                name: "由来",
+                value: data.flowers[i].origin.join('/'),
+              }
+            ],
+            image: {
+              url: data.flowers[i].img,
+            },
+          }
+        })
+        channel2.send({
           embed: {
             title: data.flowers[i].name,
             color: 0xffffff,
