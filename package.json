@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "node ./dist/index.js",
+    "start": "yarn compile && node ./dist/index.js",
     "start:dev": "ts-node ./src/index.ts",
     "compile": "tsc -p .",
     "compile:test": "tsc -p . --noEmit",
@@ -46,5 +46,8 @@
   },
   "engines": {
     "node": ">=12.x.x"
+  },
+  "volta": {
+    "node": "17.6.0"
   }
 }

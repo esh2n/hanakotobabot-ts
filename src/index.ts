@@ -30,7 +30,7 @@ http.createServer(function(req, res){
     res.writeHead(200, {'Content-Type': 'text/plain'});
     res.end('Discord Bot is active now\n');
   }
-}).listen(3000);
+}).listen(8080);
 
 export const client = new Client();
 client.on('ready', () => {
